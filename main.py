@@ -1,29 +1,50 @@
 import argparse
+import sys
 from generator import generate_exercises
 from calculator import calculate
 from checker import check_answers
 
 def main():
-    parser = argparse.ArgumentParser(description="Arithmetic Exercise Generator")
-    parser.add_argument('-n', type=int, help="Number of exercises to generate")
-    parser.add_argument('-r', type=int, help="Range of numbers (mandatory for generation)")
-    parser.add_argument('-e', type=str, help="Exercise file for grading")
-    parser.add_argument('-a', type=str, help="Answer file for grading")
+    parser = argparse.ArgumentParser(description="四则运算题目生成器")
+    parser.add_argument('-n', type=int, help="生成题目数量")
+    parser.add_argument('-r', type=int, help="数值范围（必填）")
+    parser.add_argument('-e', type=str, help="判卷的题目文件")
+    parser.add_argument('-a', type=str, help="判卷的答案文件")
     args = parser.parse_args()
 
-    if args.n is not None:
-        if args.r is None:
-            parser.error("The -r parameter is required when using -n")
-        exercises = generate_exercises(args.n, args.r)
-        with open('Exercises.txt', 'w') as ef, open('Answers.txt', 'w') as af:
-            for i, expr in enumerate(exercises, 1):
-                ef.write(f"{i}. {expr}\n")
-                ans = calculate(expr)
-                af.write(f"{i}. {ans}\n")
+    # if args.n is not None:
+    #     if args.r is None:
+    #         parser.error("使用 -n 时必须提供 -r 参数")
+    #     exercises = generate_exercises(args.n, args.r)
+    #     with open('Exercises.txt', 'w') as ef, open('Answers.txt', 'w') as af:
+    #         for expr in exercises:
+    #             ef.write(expr + '\n')
+    #             af.write(calculate(expr) + '\n')
+    # elif args.e and args.a:
+    #     check_answers(args.e, args.a)
+    # else:
+    #     parser.print_help()
+    if args.n and args.r:
+        if args.n <= 0 or args.r <= 0:
+            print("Error: Invalid n or r value. n and r must be positive integers.", file=sys.stderr)
+            sys.exit(1)
+        try:
+            generate_exercises(args.n, args.r)
+        except Exception as e:
+            print(f"An error occurred during exercise generation: {e}", file=sys.stderr)
+            sys.exit(1)
     elif args.e and args.a:
-        check_answers(args.e, args.a)
+        try:
+            check_answers(args.e, args.a)
+        except FileNotFoundError:
+            print(f"Error: One or both of the files do not exist.", file=sys.stderr)
+            sys.exit(1)
+        except Exception as e:
+            print(f"An error occurred during grading: {e}", file=sys.stderr)
+            sys.exit(1)
     else:
         parser.print_help()
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
