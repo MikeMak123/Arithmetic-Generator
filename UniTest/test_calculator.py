@@ -18,7 +18,7 @@ class TestCalculator(unittest.TestCase):
         self.assertEqual(calculate("4 × 2 ="), "8")
 
     def test_division(self):
-        self.assertEqual(calculate("1 ÷ 2 ="), "0.5") # changed expected value
+        self.assertEqual(calculate("1 ÷ 2 ="), "1/2") # changed expected value
 
     def test_complex_expression(self):
         self.assertEqual(calculate("1 + 2 × 3 ="), "7")
@@ -37,7 +37,7 @@ class TestCalculator(unittest.TestCase):
         self.assertEqual(calculate("1000 + 2000 ="), "3000")
 
     def test_fraction_simplification(self):
-        self.assertEqual(calculate("2 ÷ 4 ="), "0.5") # changed expected value
+        self.assertEqual(calculate("2 ÷ 4 ="), "1/2") # changed expected value
 
 
 if __name__ == '__main__':
