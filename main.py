@@ -1,5 +1,6 @@
 import argparse
 import sys
+import os
 from generator import generate_exercises
 from calculator import calculate
 from checker import check_answers
@@ -26,6 +27,23 @@ def main():
 
         print(f"✅ {args.n} 道题目已生成，并存入 Exercises.txt 和 Answers.txt")
 
+    elif args.e and args.a:
+        if not os.path.exists(args.e):
+            print(f"❌ 错误：题目文件 {args.e} 不存在！")
+            return
+        if not os.path.exists(args.a):
+            print(f"❌ 错误：答案文件 {args.a} 不存在！")
+            return
+
+        print(f"📌 开始判卷，题目文件：{args.e}，答案文件：{args.a}")
+        
+        try:
+            check_answers(args.e, args.a)
+        except Exception as e:
+            print(f"❌ 判卷时发生错误: {e}")
+
+    else:
+        parser.print_help()
 
     # if args.n and args.r:
     #     if args.n <= 0 or args.r <= 0:

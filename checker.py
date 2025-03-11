@@ -1,25 +1,40 @@
 from calculator import calculate
 
 def check_answers(exercise_file, answer_file):
-    """判卷，输出正确与错误题号"""
-    with open(exercise_file, 'r') as ef, open(answer_file, 'r') as af:
-        exercises = [line.strip() for line in ef.readlines()]
-        answers = [line.strip() for line in af.readlines()]
-    
-    correct, wrong = [], []
-    
-    for i, (expr, ans) in enumerate(zip(exercises, answers), 1):
-        correct_ans = calculate(expr)
-        if correct_ans == ans:
-            correct.append(i)
-        else:
-            wrong.append(i)
+    """判卷并生成成绩报告，确保答案符合分数格式"""
+    try:
+        with open(exercise_file, 'r') as ef, open(answer_file, 'r') as af:
+            exercises = [line.strip() for line in ef.readlines()]
+            answers = [line.strip() for line in af.readlines()]
+        
+        if len(exercises) != len(answers):
+            raise ValueError("Mismatch between exercises and answers count")
 
-    with open('Grade.txt', 'w') as gf:
-        gf.write(f"Correct: {len(correct)} ({', '.join(map(str, correct))})\n")
-        gf.write(f"Wrong: {len(wrong)} ({', '.join(map(str, wrong))})\n")
+        correct, wrong = [], []
 
+        for i, (expr, ans) in enumerate(zip(exercises, answers), 1):
+            try:
+                correct_ans = calculate(expr)
+                if correct_ans == ans:  # 确保答案匹配
+                    correct.append(i)
+                else:
+                    wrong.append(i)
+            except Exception as e:
+                wrong.append(i)  # 若计算错误，视为错误答案
 
+        with open('Grade.txt', 'w') as gf:
+            gf.write(f"Correct: {len(correct)} ({', '.join(map(str, correct))})\n")
+            gf.write(f"Wrong: {len(wrong)} ({', '.join(map(str, wrong))})\n")
+
+        print(f"✅ 判卷完成！正确：{len(correct)}，错误：{len(wrong)}，结果已存入 Grade.txt")
+
+    except FileNotFoundError:
+        print("❌ 错误：题目或答案文件未找到！")
+    except ValueError as e:
+        print(f"❌ 错误：{str(e)}")
+        
+        
+        
 # def check_answers(exercises_file, answers_file):
 #     """Checks answers against exercises and writes results to Grade.txt."""
 #     try:

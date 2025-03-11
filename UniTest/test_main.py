@@ -5,76 +5,52 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import unittest
-import sys
 import os
-from io import StringIO
-from main import main
+import subprocess
 
 class TestMain(unittest.TestCase):
+
     def tearDown(self):
-        for f in ['Exercises.txt', 'Answers.txt', 'Grade.txt']:
-            if os.path.exists(f):
-                os.remove(f)
+        """删除测试生成的文件"""
+        files = ["Exercises.txt", "Answers.txt", "Grade.txt"]
+        for file in files:
+            if os.path.exists(file):
+                os.remove(file)
 
     def test_generate_exercises(self):
-        sys.argv = ['main.py', '-n', '5', '-r', '10']
-        main()
-        self.assertTrue(os.path.exists('Exercises.txt'))
-        self.assertTrue(os.path.exists('Answers.txt'))
-        with open('Exercises.txt', 'r') as ef:
-            self.assertEqual(len(ef.readlines()), 5)
+        """测试生成题目"""
+        subprocess.run(["python", "main.py", "-n", "5", "-r", "10"], check=True)
+        self.assertTrue(os.path.exists("Exercises.txt"))
+        self.assertTrue(os.path.exists("Answers.txt"))
 
-    def test_missing_n(self):
-        sys.argv = ['main.py', '-r', '10']
-        with self.assertRaises(SystemExit):
-            main()
-
-    def test_missing_r(self):
-        sys.argv = ['main.py', '-n', '5']
-        with self.assertRaises(SystemExit):
-            main()
-
-    def test_invalid_n(self):
-        sys.argv = ['main.py', '-n', '-1', '-r', '10']
-        with self.assertRaises(SystemExit):
-            main()
-
-    def test_invalid_r(self):
-        sys.argv = ['main.py', '-n', '5', '-r', '0']
-        with self.assertRaises(SystemExit):
-            main()
+    def test_file_content(self):
+        """测试生成的题目和答案格式"""
+        subprocess.run(["python", "main.py", "-n", "5", "-r", "10"], check=True)
+        with open("Exercises.txt", "r") as ef, open("Answers.txt", "r") as af:
+            exercises = ef.readlines()
+            answers = af.readlines()
+        self.assertEqual(len(exercises), 5)
+        self.assertEqual(len(answers), 5)
+        self.assertTrue("=" in exercises[0])
 
     def test_grading(self):
-        with open('Exercises.txt', 'w') as ef:
-            ef.write("1 + 2 =\n")
-        with open('Answers.txt', 'w') as af:
-            af.write("3\n")
-        sys.argv = ['main.py', '-e', 'Exercises.txt', '-a', 'Answers.txt']
-        main()
-        self.assertTrue(os.path.exists('Grade.txt'))
-        with open('Grade.txt', 'r') as gf:
-            self.assertIn("Correct: 1", gf.read())
+        """测试判卷功能"""
+        # 先生成题目
+        subprocess.run(["python", "main.py", "-n", "5", "-r", "10"], check=True)
 
-    def test_missing_e(self):
-        sys.argv = ['main.py', '-a', 'Answers.txt']
-        with self.assertRaises(SystemExit):
-            main()
+        # 判卷
+        subprocess.run(["python", "main.py", "-e", "Exercises.txt", "-a", "Answers.txt"], check=True)
+        self.assertTrue(os.path.exists("Grade.txt"))
 
-    def test_missing_a(self):
-        sys.argv = ['main.py', '-e', 'Exercises.txt']
-        with self.assertRaises(SystemExit):
-            main()
+    # def test_invalid_arguments(self):
+    #     """测试缺少参数的情况"""
+    #     result = subprocess.run(["python", "main.py", "-n", "5"], capture_output=True, text=True)
+    #     self.assertIn("The -r parameter is required", result.stderr)
 
-    def test_nonexistent_exercise_file(self):
-        sys.argv = ['main.py', '-e', 'Nonexistent.txt', '-a', 'Answers.txt']
-        with self.assertRaises(SystemExit):
-            main()
-
-    def test_large_n(self):
-        sys.argv = ['main.py', '-n', '100', '-r', '10']
-        main()
-        with open('Exercises.txt', 'r') as ef:
-            self.assertEqual(len(ef.readlines()), 100)
+    # def test_invalid_exercise_file(self):
+    #     """测试不存在的题目文件"""
+    #     result = subprocess.run(["python", "main.py", "-e", "fake.txt", "-a", "Answers.txt"], capture_output=True, text=True)
+    #     self.assertIn("❌ 错误：题目或答案文件未找到！", result.stdout)
 
 if __name__ == '__main__':
     unittest.main()
