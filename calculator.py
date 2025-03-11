@@ -56,6 +56,10 @@ def eval_expr(expr):
                 left = Fraction(left, 1)
             if isinstance(right, int):
                 right = Fraction(right, 1)
+             # 确保减法不会出现负数
+            if isinstance(node.op, ast.Sub) and left < right:
+                left, right = right, left  # 交换顺序，确保 left ≥ right
+                
             return allowed_operators[type(node.op)](left, right)
         elif isinstance(node, ast.Num):  # 处理数字（整数）
             return Fraction(node.n)
